@@ -1,0 +1,166 @@
+/*
+ * Copyright 2020 California  Institute  of Technology (“Caltech”)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef X_EKF_PROPAGATOR_H_
+#define X_EKF_PROPAGATOR_H_
+
+#include <x/ekf/state_buffer.h>
+
+namespace x {
+  using Matrix4 = Eigen::Matrix4d;
+  
+  /**
+   * Fixed-size core error state covariance matrix
+   */
+  using CoreCovMatrix = Eigen::Matrix<double, kSizeCoreErr, kSizeCoreErr>;
+
+  /**
+   * A class to carry inertial propagation of state and covariance .
+   */
+  class Propagator
+  {
+    public:
+      /**
+       * Default constructor.
+       */
+      Propagator() {};
+      
+      /**
+       * A constructor.
+       *
+       * @param[in] g Gravity vector, expressed in world frame.
+       * @param[in] imu_noise IMU noise parameters (continuous time).
+       */
+      Propagator(const Vector3& g,
+                 const ImuNoise& imu_noise);
+
+      /**
+       * Sets all member variables.
+       *
+       * @param[in] g Gravity vector, expressed in world frame.
+       * @param[in] imu_noise IMU noise parameters (continuous time).
+       */
+      void set(const Vector3& g,
+               const ImuNoise& imu_noise);
+      
+      /**
+       * Propagates state estimates between two time instants.
+       *
+       * @param[in] state_0 Start state.
+       * @param[in,out] state_1 End state.
+       */
+      void propagateState(const State& state_0, State& state_1);
+      
+      /**
+       * Propagates covariance estimates between two time instants.
+       *
+       * Implementation of covariance propagation described in Section III.C 
+       * of "Real-Time Metric State Estimation for Modular Vision-Inertial
+       * Systems" by Stephan Weiss and Roland Siegwart (IROS, 2011).
+       *
+       * @param[in] state_0 Start state.
+       * @param[in,out] state_1 End state.
+       */
+      void propagateCovariance(const State& state_0, State& state_1);
+
+    private:
+      /**
+       * Gravity vector, expressed in world frame.
+       */
+      Vector3 g_ { Vector3(0.0, 0.0, -9.81) };
+
+      /**
+       * IMU noise parameters (continuous time).
+       */
+      ImuNoise imu_noise_;
+        
+      /**
+       * First order quaternion integrator.
+       * 
+       * Implementation of section 1.6.2 of "Indirect Kalman Filter for 3D
+       * Attitude Estimation" by Nik Trawny and Stergios Roumeliotis (Univ. of
+       * Minnesota)
+       *
+       * @param[in] e_w_0 Angular velocity at time t0
+       * @param[in] e_w_1 Angular velocity at time t1
+       * @param[in] dt t1-t0
+       * @return Matrix transforming quaternion at time t0 into quaternion at
+       * time t1.
+       */
+      Matrix4 quaternionIntegrator(const Vector3& e_w_0,
+                                   const Vector3& e_w_1,
+                                   const double dt) const;
+     
+      /**
+       * Computes the discrete state transition matrix.
+       *
+       * @param[in] dt Time difference of the propagation t1-t0.
+       * @param[in] e_w Bias-free gyro measurement at t1.
+       * @param[in] e_a Bias-free accel measurement at t1.
+       * @param[in] q Orientation quaternion at t1.
+       * @return The kSizeCoreErr x kSizeCoreErr discrete state transition
+       *         matrix
+       */
+      CoreCovMatrix discreteStateTransition(const double dt,
+                                            const Vector3& e_w,
+                                            const Vector3& e_a,
+                                            const Quaternion& q) const;
+
+      /**
+       * Propagate error state covariance matrix given discrete state transition
+       * and process noise covariance matrices.
+       *
+       * @param[in] cov_0 Covariance matrix at time t0.
+       * @param[in] f_d Discrete state transition matrix between t0 and t1.
+       * @param[in] q_d Discrete process noise covariance matrix.
+       * @param[out] cov_1 Covariance matrix at time t1.
+       */
+      void propagateCovarianceMatrices(const Eigen::MatrixXd& cov_0,
+                                       const CoreCovMatrix& f_d,
+                                       const CoreCovMatrix& q_d,
+                                       Eigen::MatrixXd& cov_1);
+
+      /**
+       * Computes the discrete process noise covariance matrix.
+       *
+       * The implementation of the function was adapted from MSF, which itself
+       * was auto-generated by MATLAB symbolic toolbox based on Eq. (21) of
+       * "Real-Time Metric State Estimation for Modular Vision-Inertial Systems"
+       * by Stephan Weiss and Roland Siegwart (IROS, 2011).
+       *
+       * @param[in] dt Time difference of the propagation t1-t0.
+       * @param[in] q Orientation quaternion at t1.
+       * @param[in] e_w Bias-free gyro measurement at t1.
+       * @param[in] e_a Bias-free accel measurement at t1.
+       * @param[in] n_w Gyro noise spectral density.
+       * @param[in] n_bw Gyro bias random walk.
+       * @param[in] n_a Accel noise spectral density.
+       * @param[in] n_ba Accel bias random walk.
+       * @return The kSizeCoreErr x kSizeCoreErr discrete process noise
+       *         covariance matrix
+       */
+      CoreCovMatrix discreteProcessNoiseCov(const double dt,
+                                            const Quaternion& q,
+                                            const Vector3& e_w,
+                                            const Vector3& e_a,
+                                            const double n_w,
+                                            const double n_bw,
+                                            const double n_a,
+                                            const double n_ba) const;
+  };
+} // namespace x
+
+#endif  // X_EKF_PROPAGATOR_H_
