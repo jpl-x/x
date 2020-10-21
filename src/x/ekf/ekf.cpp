@@ -15,7 +15,6 @@
  */
 
 #include <x/ekf/ekf.h>
-
 #include <iostream>
 
 using namespace x;

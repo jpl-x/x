@@ -19,41 +19,36 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-TrackManager::TrackManager()
-{}
+using namespace x;
 
-TrackManager::TrackManager(const x::Camera& camera, const double min_baseline_n)
+TrackManager::TrackManager() {}
+
+TrackManager::TrackManager(const Camera& camera, const double min_baseline_n)
 : camera_(camera)
 , min_baseline_n_(min_baseline_n)
 {}
 
-void TrackManager::setCamera(x::Camera camera)
-{
+void TrackManager::setCamera(Camera camera) {
   camera_ = camera;
 }
 
-x::TrackList TrackManager::normalizeSlamTracks(const int size_out) const
-{
+TrackList TrackManager::normalizeSlamTracks(const int size_out) const {
   return camera_.normalize(slam_trks_, size_out);
 }
 
-x::TrackList TrackManager::getMsckfTracks() const
-{
+TrackList TrackManager::getMsckfTracks() const {
   return msckf_trks_n_;
 }
 
-x::TrackList TrackManager::getNewSlamStdTracks() const
-{
+TrackList TrackManager::getNewSlamStdTracks() const {
   return new_slam_std_trks_n_;
 }
 
-x::TrackList TrackManager::getNewSlamMsckfTracks() const
-{
+TrackList TrackManager::getNewSlamMsckfTracks() const {
   return new_slam_msckf_trks_n_;
-
 }
-void TrackManager::clear()
-{
+
+void TrackManager::clear() {
   slam_trks_.clear();
   new_slam_trks_.clear();
   lost_slam_idxs_.clear();
@@ -82,12 +77,12 @@ std::vector<unsigned int> TrackManager::getLostSlamTrackIndexes() const {
   return lost_slam_idxs_;
 }
 
-void TrackManager::manageTracks(x::MatchList& matches,
-                                const x::AttitudeList cam_rots,
+void TrackManager::manageTracks(MatchList& matches,
+                                const AttitudeList cam_rots,
                                 const int n_poses_max,
                                 const int n_slam_features_max,
                                 const int min_track_length,
-                                x::TiledImage& img) {
+                                TiledImage& img) {
   // Append the new persistent tracks from last image to the persistent track
   // list and clear the list for new ones
   slam_trks_.insert(slam_trks_.end(),
@@ -126,7 +121,7 @@ void TrackManager::manageTracks(x::MatchList& matches,
         isTrackLost = false; // we found the track, so it is not lost
 
         // Find and store the current bin for this feature
-        x::Feature& feature = matches[m].current;
+        Feature& feature = matches[m].current;
         img.setTileForFeature(feature);
         const unsigned int bin_nbr =
             matches[m].current.getTileRow() * img.getNTilesW() + matches[m].current.getTileCol();
@@ -171,7 +166,7 @@ void TrackManager::manageTracks(x::MatchList& matches,
   // 2/ Convert full MSCKF tracks to persistent tracks if possible
   // 3/ Fill up open persistent states with remaining matches
   msckf_trks_n_.clear();
-  x::TrackList previous_opp_trks = opp_trks_;
+  TrackList previous_opp_trks = opp_trks_;
   opp_trks_.clear();
   unsigned int m = 0;
   while (m < matches.size()) // Matches are in descending FAST order
@@ -201,7 +196,7 @@ void TrackManager::manageTracks(x::MatchList& matches,
     }
     else // New opportunistic track!
     {
-      x::Track opp_track;
+      Track opp_track;
       opp_track.push_back(matches[m].previous);
       opp_track.push_back(matches[m].current);
       opp_trks_.push_back(opp_track);
@@ -210,12 +205,12 @@ void TrackManager::manageTracks(x::MatchList& matches,
   }
       
   // Sort remaining tracks by length, longest to shortest
-  std::sort(opp_trks_.begin(), opp_trks_.end(), [](const x::Track & a, const x::Track & b){ return a.size() > b.size(); });
+  std::sort(opp_trks_.begin(), opp_trks_.end(), [](const Track & a, const Track & b){ return a.size() > b.size(); });
   t = 0;
   while (t < opp_trks_.size()) // Tracks are sorted by length, longest to shortest
   { 
     // Find and store current bin for this feature
-    x::Feature& feature = opp_trks_[t].back(); 
+    Feature& feature = opp_trks_[t].back(); 
     img.setTileForFeature(feature);
     const unsigned int bin_nbr =
       feature.getTileRow() * img.getNTilesW() + feature.getTileCol();
@@ -297,7 +292,7 @@ void TrackManager::manageTracks(x::MatchList& matches,
           if (opp_trks_[t].size() > n_poses_max - 1)
           {
             // Normalize track (and crop it if it longer than the attitude list)
-            x::Track normalized_track = camera_.normalize(opp_trks_[t], cam_rots.size());
+            Track normalized_track = camera_.normalize(opp_trks_[t], cam_rots.size());
             if(checkBaseline(normalized_track, cam_rots))
               msckf_trks_n_.push_back(normalized_track);
 
@@ -319,14 +314,14 @@ void TrackManager::manageTracks(x::MatchList& matches,
   new_slam_std_trks_n_.clear(); // clean last image's data
   new_slam_msckf_trks_n_.clear();
 
-  x::TrackList new_slam_std_trks, new_slam_msckf_trks; // see use below
+  TrackList new_slam_std_trks, new_slam_msckf_trks; // see use below
 
   for(size_t i=0; i<new_slam_trks_.size(); i++)
   {
     // Normalize coordinates
-    const x::Track trk = new_slam_trks_[i];
+    const Track trk = new_slam_trks_[i];
     // Track cannot be longer than the attitude list
-    const x::Track normalized_trk = camera_.normalize(trk, cam_rots.size());
+    const Track normalized_trk = camera_.normalize(trk, cam_rots.size());
 
     //Check baseline and sort
     if(checkBaseline(normalized_trk, cam_rots))
@@ -364,8 +359,9 @@ void TrackManager::manageTracks(x::MatchList& matches,
  *  \param img Image plot
  *  \return A vector with the ID of the SLAM features in the triangle
  */
-std::vector<int> TrackManager::featureTriangleAtPoint(const x::Feature& lrf_img_pt, x::TiledImage& img) const
-{
+std::vector<int> 
+TrackManager::featureTriangleAtPoint(const Feature& lrf_img_pt,
+                                     TiledImage& img) const {
   /*******************************************
    * Delaunay triangulation on SLAM features *
    *******************************************/
@@ -382,7 +378,7 @@ std::vector<int> TrackManager::featureTriangleAtPoint(const x::Feature& lrf_img_
   // Add SLAM feature to Delaune triangulation
   for (unsigned int i = 0; i < slam_trks_.size(); i++)
   {
-    const x::Feature feature(slam_trks_[i].back());
+    const Feature feature(slam_trks_[i].back());
     points.push_back(cv::Point2d(feature.getXDist(),feature.getYDist()));
     cv::Point2d pt(feature.getXDist(),feature.getYDist());
 	subdiv.insert(pt);
@@ -403,7 +399,7 @@ std::vector<int> TrackManager::featureTriangleAtPoint(const x::Feature& lrf_img_
   const int status = subdiv.locate(lrf_cv_pt, edge, vertex); 
   
   //Plot LRF image point
-  x::Feature lrf_img_feature;
+  Feature lrf_img_feature;
   lrf_img_feature.setXDist(lrf_cv_pt.x);
   lrf_img_feature.setYDist(lrf_cv_pt.y); 
   img.plotFeature(lrf_img_feature, delaunay_color_selected);
@@ -453,7 +449,7 @@ std::vector<int> TrackManager::featureTriangleAtPoint(const x::Feature& lrf_img_
     // vertex, that triangle is not valid.
     if( tr_feat_ids[i] > -1)
     {
-      const x::Feature feature(slam_trks_[tr_feat_ids[i]].back());
+      const Feature feature(slam_trks_[tr_feat_ids[i]].back());
       points.push_back(cv::Point2d(feature.getXDist(),feature.getYDist()));
       subdiv.insert(cv::Point2d(feature.getXDist(),feature.getYDist()));
     }
@@ -471,8 +467,9 @@ std::vector<int> TrackManager::featureTriangleAtPoint(const x::Feature& lrf_img_
 } 
    
 // Draw delaunay triangles
-void TrackManager::draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color ) const
-{
+void TrackManager::draw_delaunay(cv::Mat& img,
+                                 cv::Subdiv2D& subdiv,
+                                 cv::Scalar delaunay_color ) const {
   std::vector<cv::Vec6f> triangleList;
   subdiv.getTriangleList(triangleList);
   std::vector<cv::Point> pt(3);
@@ -502,8 +499,8 @@ void TrackManager::draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar
   }
 }
 
-bool TrackManager::checkBaseline(const x::Track& track, const x::AttitudeList& C_q_G) const
-{
+bool TrackManager::checkBaseline(const Track& track,
+                                 const AttitudeList& C_q_G) const {
   const int n_quats = C_q_G.size();
   const int n_obs = track.size();
   
@@ -522,7 +519,7 @@ bool TrackManager::checkBaseline(const x::Track& track, const x::AttitudeList& C
   double max_feat_x = track[n_obs - 1].getX();
   double min_feat_y = track[n_obs - 1].getY();
   double max_feat_y = track[n_obs - 1].getY();
-  x::Quatern attitude_to_quaternion;
+  Quatern attitude_to_quaternion;
   const Eigen::Quaterniond Cn_q_G = attitude_to_quaternion(C_q_G[i_last]);
 
   // For each observation, going backwards in time
@@ -563,8 +560,8 @@ bool TrackManager::checkBaseline(const x::Track& track, const x::AttitudeList& C
     return false;
 }
 
-void TrackManager::plotFeatures(x::TiledImage& img, const int min_track_length)
-{
+void TrackManager::plotFeatures(TiledImage& img,
+                                const int min_track_length) {
   // Convert image in a color image
 #if CV_MAJOR_VERSION == 4
     cv::cvtColor(img, img, cv::COLOR_GRAY2BGR);
