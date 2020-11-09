@@ -125,7 +125,7 @@ Track Camera::normalize(const Track& track, const size_t max_size) const
   else
     size_out = track_size;
 
-  FeatureList normalized_track(size_out, Feature());
+  Track normalized_track(size_out, Feature());
   const size_t start_idx(track_size - size_out);
   for (size_t j = start_idx; j < track_size; ++j)
     normalized_track[j - start_idx] = normalize(track[j]);
@@ -141,7 +141,7 @@ Track Camera::normalize(const Track& track, const size_t max_size) const
 TrackList Camera::normalize(const TrackList& tracks, const size_t max_size) const
 {
   const size_t n = tracks.size();
-  TrackList normalized_tracks(n, FeatureList());
+  TrackList normalized_tracks(n, Track());
   
   for (size_t i = 0; i < n; ++i)
     normalized_tracks[i] = normalize(tracks[i], max_size);

@@ -18,6 +18,7 @@
 #define JPL_VPP_CAMERA_H_
 
 #include <x/vision/types.h>
+#include <x/vision/track.h>
 #include "opencv2/highgui/highgui.hpp"
 
 namespace x

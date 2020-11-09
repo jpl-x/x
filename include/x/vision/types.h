@@ -19,6 +19,7 @@
 
 #include <x/common/types.h>
 #include <x/vision/feature.h>
+#include <x/vision/track.h>
 #include <x/vision/tiled_image.h>
 
 #include <vector>
@@ -43,8 +44,7 @@ namespace x {
     int y; // y pixel coordinate
   };
   typedef std::vector<Feature> FeatureList;
-  typedef std::vector<Feature> Track;
-  typedef std::vector<FeatureList> TrackList;
+  typedef std::vector<Track> TrackList;
   typedef std::vector<Match> MatchList;
   typedef std::vector<TiledImage> ImagePyramid;
   typedef std::vector<cv::KeyPoint> Keypoints;

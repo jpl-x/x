@@ -18,6 +18,7 @@
 #define X_TRIANGULATION_H_
 
 #include <x/vision/types.h>
+#include <x/vision/track.h>
 #include <Eigen/Core>
 
 /**
