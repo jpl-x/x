@@ -40,27 +40,16 @@ add_definitions(-D_LINUX -D_REENTRANT)
 # Eigen plugin
 add_definitions(-DEIGEN_MATRIXBASE_PLUGIN=<x/common/eigen_matrix_base_plugin.h>)
 
-# OpenCV: catkin package or system install
-# first try locate the opencv3_catkin ros package,
-# else try OpenCV 3 and 4 system installs.
-find_package(opencv3_catkin QUIET)
-find_package(OpenCV 3 QUIET)
+# Look for OpenCV >= 3.3.1
 find_package(OpenCV 4 QUIET)
-
-if(opencv3_catkin_FOUND)
-  message("OpenCV3_catkin detected")
-  set(OPENCV_PACKAGE "opencv3_catkin")
-  set(OpenCV_INCLUDE_DIRS "")
-  set(OpenCV_LIBRARIES "")
-elseif(${OpenCV_FOUND})
-  message("OpenCV system install detected")
-  set(OPENCV_PACKAGE "")
-else()
-  message(FATAL_ERROR "No OpenCV 3 or 4 detected.")
+if(NOT ${OpenCV_FOUND})
+  find_package(OpenCV 3.3.1 QUIET)
+  if(NOT ${OpenCV_FOUND})
+    message(FATAL_ERROR "OpenCV >= 3.3.1 required.")
+  endif()
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
-  ${OPENCV_PACKAGE}
   cmake_modules
 )
 
