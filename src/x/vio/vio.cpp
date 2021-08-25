@@ -175,8 +175,8 @@ State VIO::processMatchesMeasurement(double timestamp,
 
   // Compute 2D image coordinates of the LRF impact point on the ground
   x::Feature lrf_img_pt;
-  lrf_img_pt.setXDist(320.5);
-  lrf_img_pt.setYDist(240.5);
+  lrf_img_pt.setXDist((camera_.getWidth()+1) / 2);
+  lrf_img_pt.setYDist((camera_.getHeight()+1) / 2);
   camera_.undistort(lrf_img_pt);
   last_range_measurement_.img_pt = lrf_img_pt; 
   last_range_measurement_.img_pt_n = camera_.normalize(lrf_img_pt);
