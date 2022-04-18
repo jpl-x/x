@@ -178,13 +178,13 @@ State Ekf::processUpdateMeasurement() {
 }
 
 void Ekf::lock() {
-#ifdef DUAL_THREAD
+#ifdef MULTI_THREAD
   mutex_.lock();
 #endif
 }
 
 void Ekf::unlock() {
-#ifdef DUAL_THREAD
+#ifdef MULTI_THREAD
   mutex_.unlock();
 #endif
 }
