@@ -71,13 +71,13 @@ double Camera::getCxN() const { return cx_n_; }
 double Camera::getCyN() const { return cy_n_; }
 
 void Camera::undistort(FeatureList &features) const {
-  // Undistort each point in the input vector
-  for (unsigned int i = 0; i < features.size(); i++)
-    undistort(features[i]);
+  for (auto &f : features) {
+    undistort(f);
+  }
 }
 
 void Camera::undistort(Feature &feature) const {
-  const cv::Point2d f =
+  const auto f =
       LUT_distortion_[static_cast<int>(feature.getYDist() * img_width_) +
                       static_cast<int>(feature.getXDist())];
   feature.setX(f.x);
