@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+#include <iostream>
 #include <x/vision/camera.h>
-
 using namespace x;
 
 Camera::Camera() {}
@@ -33,13 +33,13 @@ Camera::Camera(double fx, double fy, double cx, double cy, double s,
   cx_n_ = cx_ * inv_fx_;
   cy_n_ = cy_ * inv_fy_;
   s_term_ = 1.0 / (2.0 * std::tan(s / 2.0));
-  populateLUT();
+  // populateLUT();
 }
 
 void Camera::populateLUT() {
   LUT_distortion_.reserve(img_width_ * img_height_);
-  for (int i = 0; i < img_width_; i++) {
-    for (int j = 0; j < img_height_; j++) {
+  for (size_t i = 0; i < img_width_; i++) {
+    for (size_t j = 0; j < img_height_; j++) {
       const double cam_dist_x = i * inv_fx_ - cx_n_;
       const double cam_dist_y = j * inv_fy_ - cy_n_;
 
@@ -70,18 +70,29 @@ double Camera::getCxN() const { return cx_n_; }
 
 double Camera::getCyN() const { return cy_n_; }
 
-void Camera::undistort(FeatureList &features) const {
-  for (auto &f : features) {
-    undistort(f);
-  }
+void Camera::undistort(FeatureList& features) const
+{
+  // Undistort each point in the input vector
+  for(unsigned int i = 0; i < features.size(); i++)
+    undistort(features[i]);
 }
 
-void Camera::undistort(Feature &feature) const {
-  const auto f =
-      LUT_distortion_[static_cast<int>(feature.getYDist() * img_width_) +
-                      static_cast<int>(feature.getXDist())];
-  feature.setX(f.x);
-  feature.setY(f.y);
+void Camera::undistort(Feature& feature) const
+{
+  const double cam_dist_x = feature.getXDist() * inv_fx_ - cx_n_;
+  const double cam_dist_y = feature.getYDist() * inv_fy_ - cy_n_;
+
+  const double dist_r = sqrt(cam_dist_x * cam_dist_x + cam_dist_y * cam_dist_y);
+
+  double distortion_factor = 1.0;
+  if(dist_r > 0.01)
+    distortion_factor = inverseTf(dist_r) / dist_r;
+
+  const double xn = distortion_factor * cam_dist_x;
+  const double yn = distortion_factor * cam_dist_y;
+
+  feature.setX(xn * fx_ + cx_);
+  feature.setY(yn * fy_ + cy_);
 }
 
 Feature Camera::normalize(const Feature &feature) const {

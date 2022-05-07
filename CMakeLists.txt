@@ -23,8 +23,6 @@ option(UNIT_TESTS "Publish std out and other data" OFF) # Set true to enable uni
 
 #################################################################################
 
-# set (CMAKE_BUILD_TYPE Release)
-
 # Set definitions
 if(MULTI_THREAD)
   message("Multi-thread: ON")
@@ -59,7 +57,7 @@ add_definitions(-DEIGEN_MATRIXBASE_PLUGIN=<x/common/eigen_matrix_base_plugin.h>)
 find_package(Eigen3 REQUIRED)
 
 # Set build flags, depending on the architecture
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
   message("Release Mode")
