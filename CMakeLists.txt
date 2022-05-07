@@ -14,12 +14,12 @@ OPTION(MULTI_THREAD "Multi thread" ON) # Set true to process image and inertial 
 option(VERBOSE "Publish std out and other data" ON) # Set false to disable all publishing and standard output
 				  # stream, except pose at update rate. That will improve runtime.
 
-option(TIMING "Publish std out and other data" OFF) # Set true to enable timers
+option(TIMING "Publish timing information" OFF) # Set true to enable timers
 
-option(PROFILING "Publish std out and other data" OFF) # Set true to disable compiler flags which are not
+option(PROFILING "Enable profiling flags" OFF) # Set true to disable compiler flags which are not
 		      # compatible with Callgrind profiling tool.
 
-option(UNIT_TESTS "Publish std out and other data" OFF) # Set true to enable unit tests
+option(UNIT_TESTS "Build unit tests" OFF) # Set true to enable unit tests
 
 #################################################################################
 
