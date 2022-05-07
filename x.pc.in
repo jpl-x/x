@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: @PROJECT_NAME@
+Description: Generic C++ library for vision-based navigation, with multi-sensor fusion capabilities for thermal, range, solar and GPS measurements.
+Version: @PROJECT_VERSION@
+Requires: opencv2 >= 3.3.1, libzstd
+Libs: @SYSTEM_THREAD_LIBS@
+Cflags: -I${includedir}

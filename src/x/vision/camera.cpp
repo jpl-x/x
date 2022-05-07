@@ -105,7 +105,7 @@ Feature Camera::normalize(const Feature& feature) const
       feature.getX() * inv_fx_ - cx_n_,
       feature.getY() * inv_fy_ - cy_n_);
   normalized_feature.setXDist(feature.getXDist() * inv_fx_ - cx_n_);
-  normalized_feature.setYDist(feature.getYDist() * inv_fx_ - cx_n_);
+  normalized_feature.setYDist(feature.getYDist() * inv_fy_ - cy_n_);
 
   return normalized_feature;
 }

@@ -1,0 +1,60 @@
+# ===================================================================================
+#  @PROJECT_NAME@ CMake configuration file
+#
+#             ** File generated automatically, do not modify **
+#
+#  Usage from an external project:
+#    In your CMakeLists.txt, add these lines:
+#
+#    FIND_PACKAGE(@PROJECT_NAME@ REQUIRED )
+#    TARGET_LINK_LIBRARIES(MY_TARGET_NAME ${@PROJECT_NAME@_LIBS})
+#
+#    This file will define the following variables:
+#      - @PROJECT_NAME@_LIBS          : The list of libraries to links against.
+#      - @PROJECT_NAME@_LIB_DIR       : The directory where lib files are. Calling LINK_DIRECTORIES
+#                                with this path is NOT needed.
+#      - @PROJECT_NAME@_VERSION       : The  version of this PROJECT_NAME build. Example: "1.2.0"
+#      - @PROJECT_NAME@_VERSION_MAJOR : Major version part of VERSION. Example: "1"
+#      - @PROJECT_NAME@_VERSION_MINOR : Minor version part of VERSION. Example: "2"
+#      - @PROJECT_NAME@_VERSION_PATCH : Patch version part of VERSION. Example: "0"
+#
+# ===================================================================================
+
+# Look for OpenCV >= 3.3.1
+find_package(OpenCV 4 QUIET)
+if(NOT ${OpenCV_FOUND})
+  find_package(OpenCV 3.3.1 QUIET)
+  if(NOT ${OpenCV_FOUND})
+    message(FATAL_ERROR "OpenCV >= 3.3.1 required.")
+  endif()
+endif()
+
+# Eigen plugin
+add_definitions(-DEIGEN_MATRIXBASE_PLUGIN=<x/common/eigen_matrix_base_plugin.h>)
+
+find_package(Eigen3 REQUIRED)
+if(NOT ${Eigen3_FOUND})
+  message(FATAL_ERROR "Eigen3 required.")
+endif()
+
+@PACKAGE_INIT@
+
+include_directories("@CMAKE_INSTALL_PREFIX@/include" 
+  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS})
+set(@PROJECT_NAME@_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include" 
+  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS})
+check_required_components(x)
+
+LINK_DIRECTORIES("@CMAKE_INSTALL_PREFIX@/lib")
+set(@PROJECT_NAME@_LIB_DIR "@CMAKE_INSTALL_PREFIX@/lib")
+
+set(@PROJECT_NAME@_LIBRARIES @REQUIRED_LIBRARIES@ @PROJECT_NAME@@PROJECT_DLLVERSION@) 
+
+set(@PROJECT_NAME@_FOUND YES)
+set(@PROJECT_NAME@_FOUND "YES")
+set(@PROJECT_NAME@_VERSION        @PROJECT_VERSION@)
+set(@PROJECT_NAME@_VERSION_MAJOR  @PROJECT_VERSION_MAJOR@)
+set(@PROJECT_NAME@_VERSION_MINOR  @PROJECT_VERSION_MINOR@)
+set(@PROJECT_NAME@_VERSION_PATCH  @PROJECT_VERSION_PATCH@)

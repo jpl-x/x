@@ -1,3 +1,5 @@
+build
+install
 # Temporary/backup files
 *~
 *.sw*
@@ -7,3 +9,6 @@
 
 # Formatting
 .clang-format
+
+CMakeCache.txt
+CMakeFiles/*
