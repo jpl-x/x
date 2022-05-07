@@ -273,20 +273,31 @@ void VioUpdater::constructUpdate(const State& state,
 
   /* Combined update */
 
-    const size_t rows_total =
-            rows_msckf + rows_msckf_slam + rows_slam + rows_lrf + rows_sns;
-    const size_t cols = P.cols();
-    h = Matrix::Zero(rows_total, cols);
-    Eigen::VectorXd r_diag = Eigen::VectorXd::Ones(rows_total);
-    res = Matrix::Zero(rows_total, 1);
+  const size_t rows_total
+    = rows_msckf + rows_msckf_slam + rows_slam + rows_lrf + rows_sns;
+  const size_t cols = P.cols();
+  h = Matrix::Zero(rows_total, cols);
+  Eigen::VectorXd r_diag = Eigen::VectorXd::Ones(rows_total);
+  res = Matrix::Zero(rows_total, 1);
 
-    h << h_msckf, h_msckf_slam, h_slam, h_lrf, h_sns;
+  h << h_msckf,
+    h_msckf_slam,
+    h_slam,
+    h_lrf,
+    h_sns;
 
-    r_diag << r_msckf_diag, r_msckf_slam_diag, r_slam_diag, r_lrf_diag,
-            r_sns_diag;
-    r = r_diag.asDiagonal();
+  r_diag << r_msckf_diag,
+         r_msckf_slam_diag,
+         r_slam_diag,
+         r_lrf_diag,
+         r_sns_diag;
+  r = r_diag.asDiagonal();
 
-    res << res_msckf, res_msckf_slam, res_slam, res_lrf, res_sns;
+  res << res_msckf,
+      res_msckf_slam,
+      res_slam,
+      res_lrf,
+      res_sns;
 
   // QR decomposition of the update Jacobian
   applyQRDecomposition(h, res, r);
