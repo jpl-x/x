@@ -47,7 +47,9 @@ namespace x {
                  const double rho_0,
                  const double sigma_rho_0,
                  const int min_track_length,
-                 const int iekf_iter = 1);
+                 const int iekf_iter = 1,
+                 const double lrf_ground_hit_px_x = 320.5,
+                 const double lrf_ground_hit_px_y = 240.5);
 
       void setMeasurement(const VioMeasurement& measurement);
 
@@ -120,6 +122,16 @@ namespace x {
        * Minimum track length for a visual feature to be processed.
        */
       int min_track_length_;
+
+      /**
+       * LRF ground hit pixel x-coordinate.
+       */
+      double lrf_ground_hit_px_x_;
+
+      /**
+       * LRF ground hit pixel y-coordinate.
+       */
+      double lrf_ground_hit_px_y_;
 
       
       // All track members assume normalized undistorted feature coordinates.

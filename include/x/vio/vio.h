@@ -114,6 +114,12 @@ namespace x {
        */
       double msckf_baseline_n_;
 
+      /**
+       * LRF ground hit in pixels.
+       */
+      double lrf_ground_hit_px_x_;
+      double lrf_ground_hit_px_y_;
+
       Camera camera_;
       Tracker tracker_;
       TrackManager track_manager_;
