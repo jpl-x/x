@@ -12,8 +12,16 @@ set(UNIT_TESTS false) # Set true to enable unit tests
 
 #################################################################################
 
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(x)
+
+# Check for ROS 1 catkin workspace
+if(DEFINED CATKIN_DEVEL_PREFIX)
+  set(X_USE_CATKIN_DEFAULT ON)
+else()
+  set(X_USE_CATKIN_DEFAULT OFF)
+endif()
+option(X_USE_CATKIN "Build x as a ROS 1 catkin package" ${X_USE_CATKIN_DEFAULT})
 set (CMAKE_BUILD_TYPE Release)
 
 # Set definitions
@@ -50,6 +58,13 @@ if(NOT ${OpenCV_FOUND})
 endif()
 
 find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread)
+
+if(X_USE_CATKIN)
+  find_package(catkin REQUIRED COMPONENTS
+    cmake_modules
+  )
+endif()
 
 # Set build flags, depending on the architecture
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
@@ -74,10 +89,23 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
 
 endif()
 
-## Package internal and additional locations of header files
-## Separating the projects include directory from {catkin_INCLUDE_DIRS}
-## allows to tag that with SYSTEM, which disables GCC warnings for
-## these (all the ros header, opencv, ..)
+if(X_USE_CATKIN)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+
+  catkin_package(
+    DEPENDS EIGEN3
+    INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
+    LIBRARIES x
+  )
+
+  include_directories (include)
+
+  include_directories (SYSTEM
+    ${OpenCV_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+  )
+endif()
 
 set (SOURCE
   src/x/ekf/ekf.cpp
@@ -100,7 +128,6 @@ set (SOURCE
   src/x/vision/timing.cpp
   src/x/vision/tracker.cpp
   src/x/vision/triangulation.cpp
-
 )
 
 add_library(x ${SOURCE})
@@ -108,7 +135,14 @@ add_library(x ${SOURCE})
 # Additional libraries to link against
 target_link_libraries(x
   ${OpenCV_LIBRARIES}
+  Boost::thread
+  ${catkin_LIBRARIES}
 )
+
+if(X_USE_CATKIN)
+  # NOTE: Terminate based on github CMakeLists - still misses installs but I believe they are not being used?
+  return()
+endif()
 
 target_include_directories(x
   PUBLIC
@@ -120,6 +154,7 @@ target_include_directories(x
   SYSTEM PUBLIC
     ${OpenCV_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
+    ${catkin_INCLUDE_DIRS}
 )
 
 include(GNUInstallDirs)
