@@ -98,7 +98,9 @@ void VIO::setUp(const x::Params& params) {
                             params_.rho_0,
                             params_.sigma_rho_0,
                             params_.min_track_length,
-                            params_.iekf_iter);
+                            params_.iekf_iter,
+                            params_.lrf_ground_hit_px_x,
+                            params_.lrf_ground_hit_px_y);
 
   // EKF setup
   const size_t state_buffer_sz = 250; // TODO(jeff) Read from params
@@ -175,8 +177,8 @@ State VIO::processMatchesMeasurement(double timestamp,
 
   // Compute 2D image coordinates of the LRF impact point on the ground
   x::Feature lrf_img_pt;
-  lrf_img_pt.setXDist(320.5);
-  lrf_img_pt.setYDist(240.5);
+  lrf_img_pt.setXDist(lrf_ground_hit_px_x_);
+  lrf_img_pt.setYDist(lrf_ground_hit_px_y_);
   camera_.undistort(lrf_img_pt);
   last_range_measurement_.img_pt = lrf_img_pt; 
   last_range_measurement_.img_pt_n = camera_.normalize(lrf_img_pt);
@@ -259,6 +261,10 @@ void VIO::initAtTime(double now) {
 
   const size_t n_poses_state = params_.n_poses_max;
   const size_t n_features_state = params_.n_slam_features_max;
+
+  // LRF ground hit in pixels
+  lrf_ground_hit_px_x_ = params_.lrf_ground_hit_px_x;
+  lrf_ground_hit_px_y_ = params_.lrf_ground_hit_px_y;
 
   // Initial vision state estimates and uncertainties are all zero
   const Matrix p_array = Matrix::Zero(n_poses_state * 3, 1);

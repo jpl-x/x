@@ -1,0 +1,64 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cmake:
+    name: CMake (ubuntu ${{ matrix.ubuntu }})
+    runs-on: ubuntu-latest
+    container: ubuntu:${{ matrix.ubuntu }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ["22.04", "24.04", "26.04"]
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential cmake libboost-dev libboost-thread-dev \
+            libeigen3-dev libopencv-dev
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Install
+        run: cmake --install build --prefix "${{ runner.temp }}/x-install"
+
+  catkin:
+    name: ROS 1 Noetic (catkin)
+    runs-on: ubuntu-latest
+    container: ros:noetic-ros-base
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: catkin_ws/src/x
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            libboost-dev libboost-thread-dev libeigen3-dev libopencv-dev \
+            ros-noetic-cmake-modules
+
+      - name: Build
+        working-directory: catkin_ws
+        run: |
+          source /opt/ros/noetic/setup.bash
+          catkin_make -j"$(nproc)"

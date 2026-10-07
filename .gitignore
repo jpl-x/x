@@ -7,3 +7,6 @@
 
 # Formatting
 .clang-format
+
+# build folder
+build/

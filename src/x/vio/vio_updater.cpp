@@ -30,7 +30,9 @@ VioUpdater::VioUpdater(Tracker& tracker,
                        const double rho_0,
                        const double sigma_rho_0,
                        const int min_track_length,
-                       const int iekf_iter)
+                       const int iekf_iter,
+                       const double lrf_ground_hit_px_x,
+                       const double lrf_ground_hit_px_y)
   : tracker_(tracker)
   , state_manager_(state_manager)
   , track_manager_(track_manager)
@@ -39,6 +41,8 @@ VioUpdater::VioUpdater(Tracker& tracker,
   , rho_0_ { rho_0 }
   , sigma_rho_0_ { sigma_rho_0 }
   , min_track_length_ { min_track_length }
+  , lrf_ground_hit_px_x_ { lrf_ground_hit_px_x }
+  , lrf_ground_hit_px_y_ { lrf_ground_hit_px_y }
 {
   iekf_iter_ = iekf_iter;
 }
@@ -221,8 +225,8 @@ void VioUpdater::constructUpdate(const State& state,
   if (measurement_.range.timestamp > 0.1 && slam_trks_.size()) {
     // 2D image coordinates of the LRF impact point on the ground
     Feature lrf_img_pt;
-    lrf_img_pt.setXDist(320.5);
-    lrf_img_pt.setYDist(240.5);
+    lrf_img_pt.setXDist(lrf_ground_hit_px_x_);
+    lrf_img_pt.setYDist(lrf_ground_hit_px_y_);
 
     // IDs of the SLAM features in the triangles surrounding the LRF
     const std::vector<int> tr_feat_ids = track_manager_.featureTriangleAtPoint(lrf_img_pt, feature_img_);

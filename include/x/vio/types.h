@@ -44,6 +44,8 @@ namespace x
     double cam_cx;
     double cam_cy;
     double cam_s;
+    double lrf_ground_hit_px_x;
+    double lrf_ground_hit_px_y;
     int img_height;
     int img_width;
     Vector3 p_ic;
